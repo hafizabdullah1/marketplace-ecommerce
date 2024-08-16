@@ -6,9 +6,11 @@ from .manager import MyAccountManager
 
 
 class CustomUser(AbstractUser):
+    username                = None
     name                    = models.CharField(max_length=255)
     email                   = models.EmailField(max_length=255, unique=True)
     is_verified             = models.BooleanField(default=False, blank=True)
+    email_token             = models.CharField(max_length=200)
     is_banned               = models.BooleanField(default=False, blank=True)
     
     ROLE_CHOICES = [
