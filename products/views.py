@@ -3,6 +3,7 @@ from .models import *
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 
@@ -153,3 +154,99 @@ def update_product(request, product_id):
     categories = Categorie.objects.filter(author = product.author)
     context = {'categories': categories, 'product': product }
     return render(request, 'products/update_product.html', context)
+
+
+
+# add to cart product
+def cart_add(request):
+    if request.method == 'POST':
+        product_id = request.POST.get("productId")
+        quantity = int(request.POST.get("quantity"))
+        
+        # fetch cart 
+        cart = request.session.get('cart', {})
+        
+        if product_id in cart:
+            cart[product_id] += quantity
+        else:
+            cart[product_id] = quantity
+            
+        # save cart 
+        request.session['cart'] = cart
+        request.session.modified = True
+        
+        # Get the total quantity of items in the cart
+        cart_qty = sum(cart.values())
+        
+        messages.success(request, 'Product added successfully.')
+        return JsonResponse({'success': True, 'cart_qty': cart_qty})
+
+    messages.error(request, 'Server could not understand the request.')
+    return JsonResponse({'success': False}, status=400)
+
+
+# display cart
+def cart_items(request):
+    cart = request.session.get('cart', {})
+    product_ids = cart.keys()
+
+    products = Product.objects.filter(id__in=product_ids)
+
+    cart_products = []
+    subtotal = 0
+
+    for product in products:
+        quantity = cart.get(str(product.id), 0)
+        total_price = product.price * quantity
+        subtotal += total_price
+
+        cart_products.append({
+            'product': product,
+            'quantity': quantity,
+            'total_price': total_price,
+        })
+
+    context = {
+        'cart_products': cart_products,
+        'subtotal': subtotal,
+        'total': subtotal + 199
+    }
+    return render(request, "products/cart_items.html", context)
+
+
+# update cart
+from django.http import JsonResponse
+
+def update_cart_quantity(request):
+    if request.method == 'POST':
+        product_id = request.POST.get('product_id')
+        quantity = int(request.POST.get('quantity', 0))
+        
+        cart = request.session.get('cart', {})
+        
+        if quantity > 0:
+            if product_id in cart:
+                cart[product_id] = quantity
+                request.session['cart'] = cart
+                return JsonResponse({'status': 'success', 'message': 'Quantity updated successfully'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Item not found in cart'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid quantity'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+
+# delete cart item
+@require_POST
+def delete_cart_item(request):
+    product_id = request.POST.get('product_id')
+    cart = request.session.get('cart', {})
+
+    if product_id in cart:
+        del cart[product_id]
+        request.session['cart'] = cart
+        
+        return JsonResponse({'status': 'success'})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Item not found in cart'})

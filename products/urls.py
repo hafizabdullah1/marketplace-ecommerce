@@ -9,4 +9,10 @@ urlpatterns = [
     path("product_detail/<int:product_id>/", product_detail, name="product_detail"),
     path('delete-product/<int:product_id>/', delete_product, name='delete_product'),
     path('update_product/<int:product_id>/', update_product, name='update_product'),
+    
+    # add to cart related urls
+    path('cart_add', cart_add, name='cart_add'),
+    path('cart_items', cart_items, name='cart_items'),
+    path('delete-cart-item/', delete_cart_item, name='delete_cart_item'),
+    path('update-cart-quantity/', update_cart_quantity, name='update_cart_quantity'),
 ]

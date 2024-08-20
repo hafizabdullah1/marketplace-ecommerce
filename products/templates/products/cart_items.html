@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}
+User Cart
+{% endblock %}
+
+{% block content %}
+
+<div class="font-sans max-w-4xl max-md:max-w-xl mx-auto p-4">
+    <h1 class="text-2xl font-extrabold text-gray-800">Your Cart</h1>
+    {% if cart_products %}
+    <div class="grid md:grid-cols-3 gap-4 mt-8">
+        <div class="md:col-span-2 space-y-4">
+            {% for item in cart_products %}
+            <div class="cart-item flex gap-4 bg-white px-4 py-6 rounded-md shadow-[0_2px_12px_-3px_rgba(6,81,237,0.3)]"
+                data-product-id="{{item.product.id}}">
+                <div class="flex gap-4">
+                    <div class="w-28 h-28 max-sm:w-24 max-sm:h-24 shrink-0">
+                        <img src='{{item.product.image.url}}' class="w-full h-full object-contain" />
+                    </div>
+                    <div class="flex flex-col gap-4">
+                        <div>
+                            <h3 class="text-base font-bold text-gray-800">{{item.product.title}}</h3>
+                            <p class="text-sm font-semibold text-gray-500 mt-2 flex items-center gap-2">Color: <span
+                                    class="inline-block w-5 h-5 rounded-md bg-[{{item.product.color}}]"></span></p>
+                        </div>
+                        <div class="flex items-center space-x-2 border border-gray-300 rounded-lg p-2 bg-white">
+                            <button type="button"
+                                class="decrease-qty w-10 h-10 flex items-center justify-center bg-[#5F16B9] text-white font-bold rounded-lg shadow-md hover:bg-[#4a0d8d] transition-colors duration-300">
+                                -
+                            </button>
+                            <input readonly type="number"
+                                class="quantity-input w-16 text-center border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-[#5F16B9] focus:border-transparent"
+                                value="{{item.quantity}}" min="1" max="{{ item.product.countInStock }}">
+                            <button type="button"
+                                class="increase-qty w-10 h-10 flex items-center justify-center bg-[#5F16B9] text-white font-bold rounded-lg shadow-md hover:bg-[#4a0d8d] transition-colors duration-300">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="ml-auto flex flex-col">
+                    <div class="flex items-start gap-4 justify-end">
+                        <!-- Delete Button -->
+                        <button type="button"
+                            class="delete-item w-8 h-8 flex items-center justify-center bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition-colors duration-300">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                    <h3 class="text-base font-bold text-gray-800 mt-auto">{{item.product.price}}</h3>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="bg-white rounded-md px-4 py-6 h-max shadow-[0_2px_12px_-3px_rgba(6,81,237,0.3)]">
+            <ul class="text-gray-800 space-y-4">
+                <li class="flex flex-wrap gap-4 text-sm">Subtotal <span class="ml-auto font-bold">Rs:
+                        {{subtotal}}</span></li>
+                <li class="flex flex-wrap gap-4 text-sm">Shipping <span class="ml-auto font-bold">Rs: 199</span></li>
+                <hr class="border-gray-300" />
+                <li class="flex flex-wrap gap-4 text-sm font-bold">Total <span class="ml-auto">Rs: {{total}}</span></li>
+            </ul>
+
+            <div class="mt-8 space-y-2">
+                <button type="button"
+                    class="mb-4 text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-[#5F16B9] hover:bg-gray-900 text-white rounded-md">Buy
+                    Now</button>
+                <a href="{% url 'home' %}">
+                    <button type="button"
+                        class="text-sm px-4 py-2.5 w-full font-semibold tracking-wide bg-transparent hover:bg-gray-100 text-gray-800 border border-gray-300 rounded-md">Continue
+                        Shopping</button>
+                </a>
+            </div>
+
+            <div class="mt-4 flex flex-wrap justify-center gap-4">
+                <img src='https://readymadeui.com/images/master.webp' alt="card1" class="w-10 object-contain" />
+                <img src='https://readymadeui.com/images/visa.webp' alt="card2" class="w-10 object-contain" />
+                <img src='https://readymadeui.com/images/american-express.webp' alt="card3"
+                    class="w-10 object-contain" />
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-lg m-4 italic font-semibold text-red-500">Cart is empty.</p>
+    {% endif %}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Handle decrease button click
+        $(document).on('click', '.decrease-qty', function () {
+            const quantityInput = $(this).siblings('.quantity-input');
+            const currentQty = parseInt(quantityInput.val());
+            if (currentQty > 1) {
+                quantityInput.val(currentQty - 1);
+                updateCart($(this).closest('.cart-item'));
+            }
+        });
+
+        // Handle increase button click
+        $(document).on('click', '.increase-qty', function () {
+            const quantityInput = $(this).siblings('.quantity-input');
+            const currentQty = parseInt(quantityInput.val());
+            const maxStock = parseInt(quantityInput.attr('max'));
+            if (currentQty < maxStock) {
+                quantityInput.val(currentQty + 1);
+                updateCart($(this).closest('.cart-item'));
+            } else {
+                alert('Sorry, you cannot add more than the available stock.');
+            }
+        });
+
+        // Handle delete button click
+        $(document).on('click', '.delete-item', function () {
+            const cartItem = $(this).closest('.cart-item');
+            const productId = cartItem.data('product-id');
+
+            $.ajax({
+                url: "{% url 'delete_cart_item' %}",
+                type: 'POST',
+                data: {
+                    'product_id': productId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // cartItem.remove();
+                        location.reload()
+                        alert('Item removed from cart successfully');
+                    } else {
+                        alert('Failed to remove item: ' + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error occurred:', error);
+                    alert('Error occurred while removing item');
+                }
+            });
+        });
+
+        // Function to send AJAX request to update cart
+        function updateCart(cartItem) {
+            const productId = cartItem.data('product-id');
+            const quantity = cartItem.find('.quantity-input').val();
+
+            console.log("productId: ", productId);
+            console.log("quantity: ", quantity);
+
+
+            $.ajax({
+                url: "{% url 'update_cart_quantity' %}",
+                type: 'POST',
+                data: {
+                    'product_id': productId,
+                    'quantity': quantity,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.status === 'success') {
+                        // alert('Quantity updated successfully');
+                        location.reload()
+                    } else {
+                        console.log('Failed to update quantity: ' + response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error occurred:', error);
+                    alert('Error occurred while updating quantity');
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}
