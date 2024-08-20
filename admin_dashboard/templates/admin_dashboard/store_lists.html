@@ -1,0 +1,144 @@
+{% extends 'main_base.html' %}
+
+{% block maincontent %}
+
+<style>
+    table {
+        table-layout: fixed;
+        width: 100%;
+    }
+</style>
+<div class="w-full">
+    <h1 class="border-b">All Stores ({{ stores|length }})</h1>
+
+    {% if messages %}
+    <div id="alert" class="fixed top-4 right-4 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="font-sans overflow-x-auto">
+        {% if stores %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100 whitespace-nowrap">
+                <tr>
+                    <th
+                        class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Business Name
+                    </th>
+                    <th
+                        class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        User Name
+                    </th>
+                    <th
+                        class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Title
+                    </th>
+                    <th
+                        class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Status
+                    </th>
+                    <th
+                        class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Total Products
+                    </th>
+                    <th
+                        class="truncate px-4 py-4 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+
+            <tbody class="bg-white divide-y divide-gray-200 whitespace-nowrap">
+                {% for store in stores %}
+                <tr id="user-{{ user.id }}">
+                    <td class="truncate px-4 py-4 text-sm text-[#5F16B9]">
+                        {{store.bussines_name}}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800 capitalize">
+                        {{store.user.name}}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        {{store.title}}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        {%if store.is_active %}
+                        <span class="text-green-500">Active</span>
+                        {% else %}
+                        <span class="text-red-500">Deactivate</span>
+                        {% endif %}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        {{store.total_products}}
+                    </td>
+                    <td class="flex justify-center items-center gap-3 px-4 py-4 text-sm text-gray-800">
+                        <a href="{% url 'view_store' store_id=store.id %}">
+                            <button
+                                class="relative flex items-center px-4 py-2 overflow-hidden font-medium transition-all bg-[#701ED7] rounded-md group">
+                                <span
+                                    class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-[#4D08A5] rounded group-hover:-mr-4 group-hover:-mt-4">
+                                    <span
+                                        class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                                </span>
+                                <span
+                                    class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-[#4D08A5] rounded group-hover:-ml-4 group-hover:-mb-4">
+                                    <span
+                                        class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                                </span>
+                                <span
+                                    class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-[#5F16B9] rounded-md group-hover:translate-x-0"></span>
+                                <span
+                                    class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">View</span>
+                            </button>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No Store Registered.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+
+    setTimeout(() => {
+        var alert = document.querySelector("#alert")
+        if (alert) {
+            alert.style.display = "none"
+        }
+    }, 4000);
+
+
+    $(document).ready(function () {
+        $('.toggle-status').on('change', function () {
+            var storeId = $(this).data('store-id');
+            var isActive = $(this).is(':checked');
+
+            $.ajax({
+                url: '{% url "toggle_store_status" %}',
+                type: 'POST',
+                data: {
+                    'store_id': storeId,
+                    'is_active': isActive,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    if (response.success) {
+                        location.reload();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX error: " + status + "\nError: " + error);
+                }
+            });
+        });
+    });
+
+</script>
+
+{% endblock %}

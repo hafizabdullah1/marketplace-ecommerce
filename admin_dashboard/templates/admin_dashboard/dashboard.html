@@ -1,0 +1,34 @@
+{% extends 'main_base.html' %}
+
+{% block maincontent %}
+<div class="p-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
+        <p class="text-lg text-gray-700">Hello, <strong class="capitalize text-indigo-600">{{ request.user.name }}</strong></p>
+        <p class="text-base text-gray-600 mt-2">
+            Welcome to your Admin Dashboard, where you can easily manage and oversee all aspects of the marketplace.
+            Use the options below to monitor user activity, manage sellers and buyers, update platform settings, and
+            access detailed reports. Take control and ensure everything runs smoothly with just a few clicks.
+        </p>
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="flex flex-col items-center justify-center h-32 p-6 bg-[#EFF2F7] rounded-lg shadow-md">
+            <h3 class="text-gray-600 mb-1">Total Orders</h3>
+            <p class="text-2xl font-semibold text-indigo-600">3650</p>
+        </div>
+        <div class="flex flex-col items-center justify-center h-32 p-6 bg-[#EFF2F7] rounded-lg shadow-md">
+            <h3 class="text-gray-600 mb-1">Pending Orders</h3>
+            <p class="text-2xl font-semibold text-indigo-600">{{ pending_req }}</p>
+        </div>
+        <div class="flex flex-col items-center justify-center h-32 p-6 bg-[#EFF2F7] rounded-lg shadow-md">
+            <h3 class="text-gray-600 mb-1">Pending Store Requests</h3>
+            <p class="text-2xl font-semibold text-indigo-600">{{ pending_req }}</p>
+        </div>
+        <div class="flex flex-col items-center justify-center h-32 p-6 bg-[#EFF2F7] rounded-lg shadow-md">
+            <h3 class="text-gray-600 mb-1">Total Sellers</h3>
+            <p class="text-2xl font-semibold text-indigo-600">{{ total_sellers }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

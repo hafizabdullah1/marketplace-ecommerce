@@ -1,0 +1,73 @@
+<style>
+    /* Shop header divs animation */
+    .animate {
+        animation: animate 10s linear infinite reverse;
+    }
+
+    @keyframes animate {
+        from {
+            transform: rotateZ(360deg);
+            top: -400px;
+        }
+    }
+
+    /* Header shoes animation responsiveness*/
+    @media screen and (max-width: 640px) {
+
+        @keyframes bounce {
+            0% {
+                transform: rotateZ(-6deg);
+                top: 0px;
+            }
+
+            50% {
+                top: -6px;
+            }
+
+            100% {
+                transform: rotateZ(6deg);
+                top: 0;
+            }
+        }
+
+    }
+</style>
+
+
+<div class="bg-[#EFF2F7] flex justify-center items-center h-48 overflow-hidden relative">
+    <div class="relative z-20">
+        <h2 class="text-2xl font-bold mb-3 opacity-80">CommerceLink</h2>
+        <p class="flex items-center justify-center gap-2">
+            <span class="text-[#5F16B9]"><a href="{% url 'home' %}"><i class="fa fa-home"></i></a></span> <a href="{{path}}">{{path}}</a>
+        </p>
+    </div>
+    <ul id="animated-list" class="absolute h-full w-full flex flex-wrap justify-center items-center z-0">
+        <!-- List items will be injected by JavaScript -->
+    </ul>
+</div>
+
+<script>
+    function randomNum() {
+        return parseInt(Math.random() * 20 * 5 + 20);
+    }
+
+    function randomDelay() {
+        return Math.random() * 4 + 1;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const list = document.getElementById('animated-list');
+        list.style.columnGap = randomNum() * 12
+        list.style.rowGap = randomNum() * 20
+        for (let i = 0; i < 12; i++) {
+            const li = document.createElement('li');
+            li.style.height = randomNum() + "px";
+            li.style.width = randomNum() + "px";
+            li.style.left = randomNum() + "px";
+            li.style.top = randomNum() * 3 + "px";
+            li.style.animationDelay = randomDelay() * 2 + "s";
+            li.className = "animate rounded-lg opacity-40 bg-[#5F16B9] relative";
+            list.appendChild(li);
+        }
+    });
+</script>

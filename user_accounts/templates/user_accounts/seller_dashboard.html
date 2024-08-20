@@ -1,0 +1,36 @@
+{% extends 'main_base.html' %}
+
+{% block maincontent %}
+<div class="p-8">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Seller Dashboard</h1>
+        <p class="text-lg text-gray-700">
+            Hello, <strong class="capitalize text-indigo-600">{{ request.user.name }}</strong>
+        </p>
+        <p class="text-base text-gray-600 mt-2">
+            Welcome to your Dashboard, where you can easily manage your Products, Store, and Orders.
+        </p>
+    </div>
+
+    {% if store.status %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div class="flex flex-col items-center justify-center p-6 bg-[#EFF2F7] rounded-lg shadow-md h-32">
+            <h3 class="text-gray-600 mb-1 text-lg font-semibold">Total Orders</h3>
+            <p class="text-2xl font-bold text-indigo-600">3650</p>
+        </div>
+        <div class="flex flex-col items-center justify-center p-6 bg-[#EFF2F7] rounded-lg shadow-md h-32">
+            <h3 class="text-gray-600 mb-1 text-lg font-semibold">Pending Orders</h3>
+            <p class="text-2xl font-bold text-indigo-600">{{ pending_req }} 2</p>
+        </div>
+        <div class="flex flex-col items-center justify-center p-6 bg-[#EFF2F7] rounded-lg shadow-md h-32">
+            <h3 class="text-gray-600 mb-1 text-lg font-semibold">Total Stock</h3>
+            <p class="text-2xl font-bold text-indigo-600">{{ total_products }}</p>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-xl text-center text-gray-700 mt-6">
+        Your request is currently being processed. Thank you for your patience.
+    </p>
+    {% endif %}
+</div>
+{% endblock %}

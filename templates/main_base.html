@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Admin Dashboard
+{% endblock %}
+
+{% block content %}
+
+{% include 'small_header.html' %}
+
+<section class="flex gap-8 mx-10 mt-16">
+    <!-- Sidebar -->
+    <div class="bg-[#EFF2F7] p-6 rounded-lg shadow-lg w-64">
+        <ul class="space-y-4">
+            <li>
+                <a href="{% if request.user.is_superuser %} {% url 'admin_dashboard' %} {% elif request.user.role == 'seller' %} {% url 'seller_dashboard' %} {% else %} {% url 'home' %} {% endif %}" class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-tachometer-alt mr-2"></i>
+                    Dashboard
+                </a>
+            </li>
+            {% if request.user.role == 'admin' %}
+            <li>
+                <a href="{% url 'users' %}" class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-users mr-2"></i>
+                    Manage Users
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'store_lists' %}" class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-store mr-2"></i>
+                    Manage Stores
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'products_list' %}" class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-box mr-2"></i>
+                    Manage Products
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'seller_requests' %}" class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-handshake mr-2"></i>
+                    Store Requests
+                </a>
+            </li>
+            {% endif %}
+            <li>
+                <a href="{% url 'products_by_user' user_id=request.user.id %}" class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-boxes-stacked mr-2"></i>
+                    Your Products
+                </a>
+            </li>
+            {% if request.user.role == 'seller' %}
+            <li>
+                <a href="{% url 'store_info' user_id=request.user.id %}" class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-store-alt mr-2"></i>
+                    Your Store
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 p-6 bg-white rounded-lg shadow-lg">
+        {% block maincontent %}
+        {% endblock %}
+    </div>
+</section>
+{% endblock %}

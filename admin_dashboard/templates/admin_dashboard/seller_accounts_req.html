@@ -1,0 +1,139 @@
+{% extends 'main_base.html' %}
+
+{% block maincontent %}
+
+<style>
+    table {
+        table-layout: fixed;
+        width: 100%;
+    }
+</style>
+<div class="w-full">
+    <h1 class="border-b">All Requests</h1>
+
+    {% if messages %}
+    <div id="alert" class="fixed top-4 right-4 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg">
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="font-sans overflow-x-auto">
+        {% if pending_req %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100 whitespace-nowrap">
+                <tr>
+                    <th class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        User Name
+                    </th>
+                    <th class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Business Name
+                    </th>
+                    <th class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Business Title
+                    </th>
+                    <th class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Requested Date
+                    </th>
+                    <th class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Request Status
+                    </th>
+                    {% if req.status %}
+                    <!-- <th></th> -->
+                    {% else %}
+                    <th class="truncate px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
+                    {% endif %}
+                </tr>
+            </thead>
+
+            <tbody class="bg-white divide-y divide-gray-200 whitespace-nowrap">
+                {% for req in pending_req %}
+                <tr id="user-{{ user.id }}">
+                    <td class="truncate px-4 py-4 text-sm text-gray-800 capitalize">
+                        {{req.user.name}}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        {{req.bussines_name}}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        {{req.title}}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        {{req.requested_at}}
+                    </td>
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        {%if req.status %}
+                        <span class="text-green-500">Approved</span>
+                        {% else %}
+                        <span class="text-red-500">Pending</span>
+                        {% endif %}
+                    </td>
+                    {% if req.status %}
+                    <!-- <td></td> -->
+                    {% else %}
+                    <td class="truncate px-4 py-4 text-sm text-gray-800">
+                        <button class="approve-btn text-blue-600 mr-4" value="{{ req.id }}" data-store-id="{{ store.id }}" title="Request Approved">
+                            <i class="fa-solid fa-check border h-6 w-6 flex justify-center items-center rounded-full hover:bg-blue-400 hover:text-white duration-600 transition-all"></i>
+                        </button>
+                        <button class="text-red-600 delete-user-btn" value="{{req.id}}" data-store-id="{{ req.id }}" title="Request Cancel">
+                            <i class="fa-solid fa-xmark border h-6 w-6 flex justify-center items-center rounded-full hover:bg-red-400 hover:text-white duration-600 transition-all"></i>
+                        </button>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No Pending Requested Account.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+
+    setTimeout(() => {
+        var alert = document.querySelector("#alert")
+        if (alert) {
+            alert.style.display = "none"
+        }
+    }, 4000);
+
+    $(document).ready(function () {
+        // Handler for the "Approved" button
+        $('.approve-btn').on('click', function (e) {
+            e.preventDefault(); // Prevent the default action (e.g., form submission)// Get the store ID (you might need to set this dynamically depending on your HTML structure)
+            let storeId = $(this).closest('button').val()
+
+            console.log(storeId);
+            
+
+            // Perform the AJAX request
+            $.ajax({
+                url: '{% url "approved_store" %}', // URL of the Django viewtype: 'POST',
+                type: "POST",
+                data: {
+                    'store_id': storeId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'// CSRF token for security
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.message);
+                        location.reload()
+                        // Optionally, you can update the UI here, e.g., change button text or hide it
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX error: " + status + "\nError: " + error);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

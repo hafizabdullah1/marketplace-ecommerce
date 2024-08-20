@@ -10,17 +10,24 @@
     <h1>Home Page</h1>
 
     {% if request.user.is_authenticated %}
+
+    {% if store.status %}
+    Request Approved.
+    {% else %}
+        Store request is pending....
+    {% endif %}
+
     {{request.user.name}}
     <a href="{% url 'logout' %}">
         log out
     </a>
     {% else %}
-    please login: 
+    please login:
     <a href="{% url 'login' %}">
         login
     </a>
-
     {% endif %}
+
 </body>
 
 </html>
