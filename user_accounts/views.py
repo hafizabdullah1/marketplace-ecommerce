@@ -239,3 +239,8 @@ def update_store(request, store_id):
         return render(request, 'user_accounts/update_store.html', {'store': store})
 
         
+# User dashboard
+role_required('buyer')
+def user_dashboard(request):
+    context = {}
+    return render(request, "user_accounts/user_dashboard", context)

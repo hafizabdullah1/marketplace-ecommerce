@@ -1,9 +1,15 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from .models import *
 from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
+from django.utils import timezone
+import stripe
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
+
 
 # Create your views here.
 
@@ -215,8 +221,6 @@ def cart_items(request):
 
 
 # update cart
-from django.http import JsonResponse
-
 def update_cart_quantity(request):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
@@ -250,3 +254,140 @@ def delete_cart_item(request):
         return JsonResponse({'status': 'success'})
     else:
         return JsonResponse({'status': 'error', 'message': 'Item not found in cart'})
+
+
+
+# checkout
+def create_order(request):
+    if request.method == 'POST':
+        address = request.POST.get('address')
+        city = request.POST.get('city')
+
+        cart = request.session.get('cart', {})
+        
+        if not address or not city or not cart:
+            messages.error(request, "Please fill out all required fields.")
+            return redirect('checkout')  
+
+        total_amount = 0
+
+        order = Order.objects.create(
+            user=request.user,
+            address=address,
+            city=city,
+            ordered_at=timezone.now()
+        )
+
+        for product_id, quantity in cart.items():
+            try:
+                product = Product.objects.get(id=product_id)
+                quantity = int(quantity)
+                price = product.price * quantity
+                total_amount += price
+
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    quantity=quantity,
+                    price=price
+                )
+            except Product.DoesNotExist:
+                messages.error(request, f"Product with ID {product_id} does not exist.")
+                return redirect('checkout')
+
+        order.total_amount = total_amount
+        order.save()
+
+        request.session['cart'] = {}
+
+        messages.success(request, "Your order has been placed successfully!")
+        return redirect('order_summary', order_id=order.id)
+
+    return render(request, 'products/checkout.html')
+
+
+# order summary 
+def order_summary(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    context = {'order': order}
+    return render(request, 'products/order_summary.html', context)
+
+
+# Stripe payment
+stripe.api_key = settings.STRIPE_SECRET_KEY
+def payment(request, order_id):
+    order = Order.objects.get(id=order_id)
+    if request.method == 'POST':
+        token = request.POST.get('stripeToken')
+        if not token:
+            messages.error(request, "Payment failed. Please try again.")
+            return redirect('payment', order_id=order_id)
+        try:
+            charge = stripe.Charge.create(
+                amount=int(order.total_amount * 100),  # Amount in cents
+                currency='usd',
+                description=f'Order {order_id}',
+                source=token,
+            )
+            
+            # # Update order status
+            # # order.status = True
+            # order.save()
+
+            order_items = OrderItem.objects.filter(order=order)
+
+            for item in order_items:
+                product = item.product
+                product.countInStock -= item.quantity
+                product.save()
+
+            messages.success(request, "Payment successful! Thank you for your order.")
+            return redirect('home')
+        except stripe.error.CardError as e:
+            messages.error(request, f"Payment failed: {e.user_message}")
+            return redirect('payment', order_id=order_id)
+    
+    # Render the payment page
+    context = {
+        'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
+        'order': order
+    }
+    return render(request, 'products/payment.html', context)
+
+
+# web hook for stripe events
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    event = None
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, endpoint_secret
+        )
+    except ValueError as e:
+        # Invalid payload
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        # Invalid signature
+        return HttpResponse(status=400)
+
+    # Handle the event
+    if event['type'] == 'payment_intent.succeeded':
+        payment_intent = event['data']['object']
+        # PaymentIntent was successful
+        # You can update your order status here
+        order_id = payment_intent.get('metadata', {}).get('order_id')
+        if order_id:
+            try:
+                order = Order.objects.get(id=order_id)
+                order.status = True
+                order.delivered_at = timezone.now()
+                order.save()
+            except Order.DoesNotExist:
+                pass
+
+    return HttpResponse(status=200)

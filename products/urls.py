@@ -11,8 +11,15 @@ urlpatterns = [
     path('update_product/<int:product_id>/', update_product, name='update_product'),
     
     # add to cart related urls
-    path('cart_add', cart_add, name='cart_add'),
-    path('cart_items', cart_items, name='cart_items'),
+    path('cart_add/', cart_add, name='cart_add'),
+    path('cart_items/', cart_items, name='cart_items'),
     path('delete-cart-item/', delete_cart_item, name='delete_cart_item'),
     path('update-cart-quantity/', update_cart_quantity, name='update_cart_quantity'),
+    path('checkout/', create_order, name='checkout'),
+    path('order_summary/<int:order_id>/', order_summary, name='order_summary'),
+    
+    # stripe
+    path('payment/<int:order_id>/', payment, name='payment'),
+    path('stripe-webhook/', stripe_webhook, name='stripe_webhook'),
+
 ]

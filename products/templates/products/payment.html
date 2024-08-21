@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white shadow-lg rounded-lg max-w-md w-full p-6">
+        {% if messages %}
+        <div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
+          {% for message in messages %}
+          <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
+                          {% if message.tags == 'debug' %}
+                              bg-gray-600
+                          {% elif message.tags == 'info' %}
+                              bg-blue-500
+                          {% elif message.tags == 'success' %}
+                              bg-green-500
+                          {% elif message.tags == 'warning' %}
+                              bg-yellow-500
+                          {% elif message.tags == 'error' %}
+                              bg-red-500
+                          {% else %}
+                              bg-gray-500
+                          {% endif %}">
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        <h1 class="text-2xl font-bold mb-4">Payment for Order #{{ order.id }}</h1>
+        <form action="{% url 'payment' order.id %}" method="post" id="payment-form">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="card-element" class="block text-gray-700 text-sm font-medium mb-2">Credit or debit
+                    card</label>
+                <div id="card-element" class="p-3 border border-gray-300 rounded-md">
+                </div>
+                <div id="card-errors" role="alert" class="text-red-500 mt-2">
+
+                </div>
+            </div>
+            <button type="submit"
+                class="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Submit
+                Payment</button>
+        </form>
+    </div>
+
+    <script>
+
+        setTimeout(() => {
+            var alert = document.querySelector("#message-container")
+            if (alert) {
+                alert.style.display = "none"
+            }
+        }, 3000);
+
+        const stripe = Stripe('{{ stripe_public_key }}');
+        const elements = stripe.elements();
+        const card = elements.create('card');
+        card.mount('#card-element');
+
+        card.addEventListener('change', function (event) {
+            const displayError = document.getElementById('card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            stripe.createToken(card).then(function (result) {
+                if (result.error) {
+                    const errorElement = document.getElementById('card-errors');
+                    errorElement.textContent = result.error.message;
+                } else {
+                    stripeTokenHandler(result.token);
+                }
+            });
+        });
+
+        function stripeTokenHandler(token) {
+            const form = document.getElementById('payment-form');
+            const hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');
+            hiddenInput.setAttribute('value', token.id);
+            form.appendChild(hiddenInput);
+            form.submit();
+        }
+    </script>
+</body>
+
+</html>

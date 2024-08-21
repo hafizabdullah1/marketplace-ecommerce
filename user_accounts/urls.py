@@ -11,12 +11,14 @@ urlpatterns = [
     path('edit_user/<int:user_id>/', edit_user, name="edit_user"),    
     path('seller_store_info/', seller_store_info, name="seller_store_info"),
     
-    # Seller dashboard related views
+    # Seller dashboard related routes
     path('seller_dashboard/', seller_dashboard, name='seller_dashboard'),
     path('store_info/<int:user_id>', store_info, name='store_info'),
     path('store/update/<int:store_id>/', update_store, name='update_store'),
 
-    
+    # User related routes
+    path('user_dashboard/', user_dashboard, name='user_dashboard'),
+
     
     # Admin accessed routes
     path('delete-user/<int:user_id>/', delete_user, name='delete_user'),
