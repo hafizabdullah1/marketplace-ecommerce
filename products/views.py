@@ -4,23 +4,29 @@ from django.contrib import messages
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import stripe
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from marketplace.decorators import *
+from django.db.models import Count, Sum
+from django.db.models.functions import TruncMonth
 
 
-
-# Create your views here.
-
-# all products list to show to admin
-
+# all products list to sellers and buyers
 def home_products(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+    
+    if request.user.is_authenticated and request.user.is_banned: 
+        return render(request, 'account_blocked.html')
+
     products = Product.objects.all()
     context = {'products': products}
     return render(request, "products/products.html", context)
 
-
+@role_required('admin')
 def products_list(request):
     products = Product.objects.all()
     
@@ -30,6 +36,9 @@ def products_list(request):
 
 # Single seller products
 def products_by_user(request, user_id):
+    if request.user.is_authenticated and request.user.role == 'buyer':
+        return redirect('home')
+    
     user = None
     try:   
         user = CustomUser.objects.get(id=user_id)
@@ -59,7 +68,7 @@ def product_detail(request, product_id):
 
 # create product
 def create_product(request):
-    if request.user.role == 'buyer':
+    if request.user.is_authenticated and request.user.role == 'buyer':
         return redirect('home')
 
     if request.method == 'POST':
@@ -103,7 +112,7 @@ def create_product(request):
 
 # delete product
 def delete_product(request, product_id):
-    if request.user.role == 'buyer':
+    if request.user.is_authenticated and request.user.role == 'buyer':
         return redirect("home")
     
     if request.method == 'DELETE':
@@ -123,6 +132,9 @@ def delete_product(request, product_id):
 
 # Update product
 def update_product(request, product_id):
+    if request.user.is_authenticated and request.user.role == 'buyer':
+        return redirect('home')
+    
     product = get_object_or_404(Product, id=product_id)
     
     if request.method == 'POST':
@@ -162,9 +174,11 @@ def update_product(request, product_id):
     return render(request, 'products/update_product.html', context)
 
 
-
 # add to cart product
 def cart_add(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+
     if request.method == 'POST':
         product_id = request.POST.get("productId")
         quantity = int(request.POST.get("quantity"))
@@ -193,6 +207,9 @@ def cart_add(request):
 
 # display cart
 def cart_items(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+
     cart = request.session.get('cart', {})
     product_ids = cart.keys()
 
@@ -222,6 +239,9 @@ def cart_items(request):
 
 # update cart
 def update_cart_quantity(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+    
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
         quantity = int(request.POST.get('quantity', 0))
@@ -244,6 +264,9 @@ def update_cart_quantity(request):
 # delete cart item
 @require_POST
 def delete_cart_item(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+    
     product_id = request.POST.get('product_id')
     cart = request.session.get('cart', {})
 
@@ -259,6 +282,9 @@ def delete_cart_item(request):
 
 # checkout
 def create_order(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+    
     if request.method == 'POST':
         address = request.POST.get('address')
         city = request.POST.get('city')
@@ -308,7 +334,7 @@ def create_order(request):
 
 # order summary 
 def order_summary(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id)
     context = {'order': order}
     return render(request, 'products/order_summary.html', context)
 
@@ -316,6 +342,9 @@ def order_summary(request, order_id):
 # Stripe payment
 stripe.api_key = settings.STRIPE_SECRET_KEY
 def payment(request, order_id):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+    
     order = Order.objects.get(id=order_id)
     if request.method == 'POST':
         token = request.POST.get('stripeToken')
@@ -329,10 +358,9 @@ def payment(request, order_id):
                 description=f'Order {order_id}',
                 source=token,
             )
-            
-            # # Update order status
-            # # order.status = True
-            # order.save()
+
+            order.is_paid = True
+            order.save()
 
             order_items = OrderItem.objects.filter(order=order)
 
@@ -358,6 +386,9 @@ def payment(request, order_id):
 # web hook for stripe events
 @csrf_exempt
 def stripe_webhook(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+    
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
@@ -384,10 +415,97 @@ def stripe_webhook(request):
         if order_id:
             try:
                 order = Order.objects.get(id=order_id)
-                order.status = True
-                order.delivered_at = timezone.now()
+                # order.status = True
+                order.is_paid = True
                 order.save()
             except Order.DoesNotExist:
                 pass
 
     return HttpResponse(status=200)
+
+
+
+# user orders history
+def order_history(request):
+    if request.user.is_authenticated and request.user.role == 'admin':
+        return redirect('admin_dashboard')
+    
+    orders = Order.objects.filter(user=request.user)
+    context = {'orders': orders }
+    return render(request, "products/order_history.html", context)
+
+# seller orders
+@role_required('seller')
+def seller_orders(request):
+    # Filter orders where the product's author is the logged-in user
+    orders = Order.objects.filter(orderitem__product__author=request.user).distinct()
+    context = {'orders': orders}
+    return render(request, "products/seller_orders.html", context)
+
+
+# Orders analytics
+@login_required
+def order_analytics(request):
+    if request.user.role == 'buyer':
+        return redirect('home')
+        
+    user = request.user
+    
+    if user.role == 'seller':
+        # Find orders containing products authored by the current seller
+        order_ids = OrderItem.objects.filter(
+            product__author=user
+        ).values_list('order_id', flat=True).distinct()
+        
+        # Filter orders by these IDs
+        orders = Order.objects.filter(id__in=order_ids)
+
+        # Calculate total sales for products authored by the seller
+        total_sales = OrderItem.objects.filter(
+            order__in=orders,
+            product__author=user
+        ).aggregate(total_sales=Sum('price'))['total_sales'] or 0
+        
+        # Monthly sales aggregation for the seller's products
+        monthly_data = OrderItem.objects.filter(
+            order__in=orders,
+            product__author=user
+        ).annotate(
+            month=TruncMonth('order__ordered_at')
+        ).values('month').annotate(
+            total_sales=Sum('price'),
+            order_count=Count('order_id')
+        ).order_by('month')
+
+    else:
+        # Admin sees all orders
+        orders = Order.objects.all()
+        
+        # Calculate total sales for all orders
+        total_sales = orders.aggregate(total_sales=Sum('total_amount'))['total_sales'] or 0
+        
+        # Monthly sales aggregation for all orders
+        monthly_data = orders.annotate(
+            month=TruncMonth('ordered_at')
+        ).values('month').annotate(
+            total_sales=Sum('total_amount'),
+            order_count=Count('id')
+        ).order_by('month')
+
+    months = [entry['month'].strftime('%Y-%m') for entry in monthly_data]
+    sales = [entry['total_sales'] for entry in monthly_data]
+    orders_count = [entry['order_count'] for entry in monthly_data]
+
+    data = {
+        'total_sales': total_sales,
+        'order_count': orders.count(),  # Count of all orders
+        'months': months,
+        'sales': sales,
+        'orders': orders_count
+    }
+    return JsonResponse(data)
+
+
+# analytics template rendering
+def analytics(request):
+    return render(request, "products/analytics.html")

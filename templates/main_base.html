@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-Admin Dashboard
+{{request.user.name}} Dashboard
 {% endblock %}
 
 {% block content %}
@@ -9,17 +9,16 @@ Admin Dashboard
 {% include 'small_header.html' %}
 
 <section class="flex gap-8 mx-10 mt-16">
-    <!-- Sidebar -->
     <div class="bg-[#EFF2F7] p-6 rounded-lg shadow-lg w-64">
         <ul class="space-y-4">
             <li>
-                <a href="{% if request.user.is_superuser %} {% url 'admin_dashboard' %} {% elif request.user.role == 'seller' %} {% url 'seller_dashboard' %} {% else %} {% url 'home' %} {% endif %}"
+                <a href="{% if request.user.is_superuser %} {% url 'admin_dashboard' %} {% elif request.user.role == 'seller' %} {% url 'seller_dashboard' %} {% elif request.user.role == 'buyer' %} {% url 'user_dashboard' %} {% endif %}"
                     class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
                     <i class="fa-solid fa-tachometer-alt mr-2"></i>
                     Dashboard
                 </a>
-            </li>
-            {% if request.user.role == 'admin' %}
+
+                {% if request.user.role == 'admin' %}
             <li>
                 <a href="{% url 'users' %}"
                     class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
@@ -49,6 +48,14 @@ Admin Dashboard
                 </a>
             </li>
             {% endif %}
+            {% if request.user.role != 'buyer' %}
+            <li>
+                <a href="{% if request.user.role == 'admin' %} {% url 'orders' %} {% elif request.user.role == 'seller' %} {% url 'seller_orders' %} {% endif %}"
+                    class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-box mr-2"></i>
+                    Manage Orders
+                </a>
+            </li>
             <li>
                 <a href="{% url 'products_by_user' user_id=request.user.id %}"
                     class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
@@ -56,6 +63,24 @@ Admin Dashboard
                     Your Products
                 </a>
             </li>
+            </li>
+            <li>
+                <a href="{% url 'analytics' %}"
+                    class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-tachometer-alt mr-2"></i>
+                    Analytics
+                </a>
+            </li>
+            {% endif %}
+            {% if request.user.role != 'admin' %}
+            <li>
+                <a href="{% url 'order_history' %}"
+                    class="flex items-center text-gray-700 hover:text-[#5F16B9] transition-colors">
+                    <i class="fa-solid fa-box mr-2"></i>
+                    Orders History
+                </a>
+            </li>
+            {% endif %}
             {% if request.user.role == 'seller' %}
             <li>
                 <a href="{% url 'store_info' user_id=request.user.id %}"
@@ -68,7 +93,6 @@ Admin Dashboard
         </ul>
     </div>
 
-    <!-- Main Content Area -->
     <div class="flex-1 p-6 bg-white rounded-lg shadow-lg">
         {% block maincontent %}
         {% endblock %}

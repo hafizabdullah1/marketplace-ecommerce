@@ -16,10 +16,18 @@ urlpatterns = [
     path('delete-cart-item/', delete_cart_item, name='delete_cart_item'),
     path('update-cart-quantity/', update_cart_quantity, name='update_cart_quantity'),
     path('checkout/', create_order, name='checkout'),
+    
+    # Order related urls
     path('order_summary/<int:order_id>/', order_summary, name='order_summary'),
+    path('order_history/', order_history, name='order_history'),
+    path('seller_orders/', seller_orders, name='seller_orders'),
     
     # stripe
     path('payment/<int:order_id>/', payment, name='payment'),
     path('stripe-webhook/', stripe_webhook, name='stripe_webhook'),
+    
+    # analytics
+    path('order_analytics/', order_analytics, name="order_analytics"),
+    path('analytics/', analytics, name='analytics'),
 
 ]

@@ -18,7 +18,7 @@ urlpatterns = [
 
     # User related routes
     path('user_dashboard/', user_dashboard, name='user_dashboard'),
-
+    
     
     # Admin accessed routes
     path('delete-user/<int:user_id>/', delete_user, name='delete_user'),

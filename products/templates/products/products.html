@@ -36,49 +36,51 @@ CommerceLink | Products
     <h2 class="text-4xl font-extrabold text-gray-800 text-center mb-12">Top Products</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 sm:gap-6 gap-12">
         {% for product in products %}
-        <div
-            class="bg-gray-100 p-3 rounded-lg group overflow-hidden cursor-pointer relative z-50 hover:before:bg-black before:absolute before:inset-0 before:opacity-20 before:transition-all">
-            {% if product.author.role == 'admin' %}
+        {% if product.is_active %}
             <div
-                class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold py-1 px-2 rounded-full shadow-lg">
-                Verified
-            </div>
-            {% endif %}
-
-            <div class="w-full h-[300px] overflow-hidden mx-auto aspect-w-16 aspect-h-8">
-                <img src="{{product.image.url}}" alt="product" class="h-full w-full object-contain" />
-            </div>
-
-            <div
-                class="absolute mx-auto left-0 right-0 -bottom-80 group-hover:bottom-2 bg-white w-11/12 p-3 rounded-lg transition-all duration-300">
-                <div class="text-center">
-                    <h3 class="text-base font-bold text-gray-800">{{product.title}}</h3>
-                    <h4 class="text-lg text-blue-600 font-bold mt-2">{{product.price}}</h4>
+                class="bg-gray-100 p-3 rounded-lg group overflow-hidden cursor-pointer relative z-50 hover:before:bg-black before:absolute before:inset-0 before:opacity-20 before:transition-all">
+                {% if product.author.role == 'admin' %}
+                <div
+                    class="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold py-1 px-2 rounded-full shadow-lg">
+                    Verified
                 </div>
-                <div class="flex justify-center space-x-1 mt-4">
-                    <a href="{% url 'product_detail' product_id=product.id %}">
-                        <button
-                            class="relative flex items-center px-4 py-2 overflow-hidden font-medium transition-all bg-[#701ED7] rounded-md group">
-                            <span
-                                class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-[#4D08A5] rounded group-hover:-mr-4 group-hover:-mt-4">
+                {% endif %}
+
+                <div class="w-full h-[300px] overflow-hidden mx-auto aspect-w-16 aspect-h-8">
+                    <img src="{{product.image.url}}" alt="product" class="h-full w-full object-contain" />
+                </div>
+
+                <div
+                    class="absolute mx-auto left-0 right-0 -bottom-80 group-hover:bottom-2 bg-white w-11/12 p-3 rounded-lg transition-all duration-300">
+                    <div class="text-center">
+                        <h3 class="text-base font-bold text-gray-800">{{product.title}}</h3>
+                        <h4 class="text-lg text-blue-600 font-bold mt-2">{{product.price}}</h4>
+                    </div>
+                    <div class="flex justify-center space-x-1 mt-4">
+                        <a href="{% url 'product_detail' product_id=product.id %}">
+                            <button
+                                class="relative flex items-center px-4 py-2 overflow-hidden font-medium transition-all bg-[#701ED7] rounded-md group">
                                 <span
-                                    class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
-                            </span>
-                            <span
-                                class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-[#4D08A5] rounded group-hover:-ml-4 group-hover:-mb-4">
+                                    class="absolute top-0 right-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-[#4D08A5] rounded group-hover:-mr-4 group-hover:-mt-4">
+                                    <span
+                                        class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                                </span>
                                 <span
-                                    class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
-                            </span>
-                            <span
-                                class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-[#5F16B9] rounded-md group-hover:translate-x-0"></span>
-                            <span
-                                class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">View
-                                Product</span>
-                        </button>
-                    </a>
+                                    class="absolute bottom-0 rotate-180 left-0 inline-block w-4 h-4 transition-all duration-500 ease-in-out bg-[#4D08A5] rounded group-hover:-ml-4 group-hover:-mb-4">
+                                    <span
+                                        class="absolute top-0 right-0 w-5 h-5 rotate-45 translate-x-1/2 -translate-y-1/2 bg-white"></span>
+                                </span>
+                                <span
+                                    class="absolute bottom-0 left-0 w-full h-full transition-all duration-500 ease-in-out delay-200 -translate-x-full bg-[#5F16B9] rounded-md group-hover:translate-x-0"></span>
+                                <span
+                                    class="relative w-full text-left text-white transition-colors duration-200 ease-in-out group-hover:text-white">View
+                                    Product</span>
+                            </button>
+                        </a>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
         {% endfor %}
     </div>
 </div>
@@ -86,9 +88,6 @@ CommerceLink | Products
 
 
 {% endif %}
-
-{% endblock %}
-
 
 <script>
     setTimeout(() => {
@@ -98,3 +97,5 @@ CommerceLink | Products
         }
     }, 3000);
 </script>
+
+{% endblock %}

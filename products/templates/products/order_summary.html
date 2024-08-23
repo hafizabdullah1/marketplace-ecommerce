@@ -32,10 +32,15 @@
                     </ul>
                 </div>
             </div>
+            {% if request.user.role != 'admin' %}
             <div class="flex justify-between">
                 <a href="{% url 'home' %}" class="bg-indigo-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-indigo-700 transition duration-300">Continue Shopping</a>
+                {% if order.is_paid == False %}
                 <a href="{% url 'payment' order.id %}" class="bg-green-600 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-700 transition duration-300">Proceed to Payment</a>
+                {% endif %}
             </div>
+            {% endif %}
+            <p class="text-center m-4">Go back to <a class="font-semibold" href="{% if request.user.role == 'seller' %} {% url 'seller_dashboard' %} {% elif request.user.role == 'admin' %} {% url 'admin_dashboard' %} {% else %} {% url 'user_dashboard' %} {% endif %}">Dashboard</a></p>
         </div>
     </div>
 </div>

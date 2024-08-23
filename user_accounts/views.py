@@ -147,6 +147,7 @@ def delete_user(request, user_id):
 
 
 # Edit user
+@role_required('admin')
 def edit_user(request, user_id):
     user = get_object_or_404(CustomUser, id=user_id)
 
@@ -193,6 +194,11 @@ def seller_store_info(request):
 
 # seller dashboard
 def seller_dashboard(request):
+    if request.user.role != 'seller':
+        return redirect('home')
+    
+    if request.user.is_authenticated and request.user.is_banned: 
+        return render(request, 'account_blocked.html')
     
     user = request.user
     path = request.path
@@ -200,14 +206,18 @@ def seller_dashboard(request):
     store = Store.objects.get(user = user)
     
     total_products = len(Product.objects.filter(author = user))
+    pending_orders = len(Order.objects.filter(orderitem__product__author=request.user, status=False).distinct())
+    total_orders = len(Order.objects.filter(orderitem__product__author=request.user).distinct())
     
-    # context = {}
-    context = {'store': store, 'path': path, 'total_products': total_products}
+    context = {'store': store, 'path': path, 'total_products': total_products, 'total_orders':total_orders, 'pending_orders': pending_orders }
     return render(request, "user_accounts/seller_dashboard.html", context)
 
 
 # View Store Detail
 def store_info(request, user_id):
+    if request.user.role != 'seller':
+        return redirect('home')
+    
     store = None
     try:
         store = Store.objects.get(user = user_id)
@@ -220,6 +230,9 @@ def store_info(request, user_id):
 
 # Edit Store info
 def update_store(request, store_id):
+    if request.user.role != 'seller':
+        return redirect('home')
+    
     store = get_object_or_404(Store, id=store_id)
 
     if request.method == 'POST':
@@ -240,7 +253,20 @@ def update_store(request, store_id):
 
         
 # User dashboard
-role_required('buyer')
+@role_required('buyer')
 def user_dashboard(request):
-    context = {}
-    return render(request, "user_accounts/user_dashboard", context)
+    
+    if request.user.is_authenticated and request.user.is_banned: 
+        return render(request, 'account_blocked.html')
+    
+    total_orders = len(Order.objects.filter(user=request.user))
+    pending_orders = len(Order.objects.filter(user=request.user, status=False))
+    recieved_orders = len(Order.objects.filter(user=request.user, status=True))
+
+    context = {
+        'total_orders': total_orders,
+        'pending_orders': pending_orders,
+        'recieved_orders': recieved_orders,
+    }
+    
+    return render(request, "user_accounts/user_dashboard.html", context)

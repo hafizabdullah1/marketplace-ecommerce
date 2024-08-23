@@ -23,20 +23,23 @@
     <!-- Mobile Menu open: "block", Menu closed: "hidden" -->
     <div class="md:flex items-center">
       <div class="flex flex-col md:flex-row md:mx-6">
-        <a class="my-1 text-sm text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0"
+        {% if request.user.role != 'admin' %}
+        <a class="my-1 text-sm text-gray-700 font-medium hover:text-[#5F16B9] md:mx-4 md:my-0"
           href="{% url 'home' %}">Home</a>
+          {% endif %}
         {% if request.user.is_authenticated %}
-        <a class="my-1 text-sm text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0"
-          href="{% if request.user.is_superuser %} {% url 'admin_dashboard' %} {% elif request.user.role == 'seller' %} {% url 'seller_dashboard' %} {% else %} {% url 'home' %} {% endif %}">Dashboard</a>
-        <a class="my-1 text-sm text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0" href="#">Contact</a>
-        <a class="my-1 text-sm text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0" href="#">About</a>
+        <a class="my-1 text-sm text-gray-700 font-medium hover:text-[#5F16B9] md:mx-4 md:my-0"
+          href="{% if request.user.is_superuser %} {% url 'admin_dashboard' %} {% elif request.user.role == 'seller' %} {% url 'seller_dashboard' %} {% elif request.user.role == 'buyer' %} {% url 'user_dashboard' %} {% endif %}">Dashboard</a>
+        <a class="my-1 text-sm text-gray-700 font-medium hover:text-[#5F16B9] md:mx-4 md:my-0" href="#">Contact</a>
+        <a class="my-1 text-sm text-gray-700 font-medium hover:text-[#5F16B9] md:mx-4 md:my-0" href="#">About</a>
         {% else %}
-        <a class="my-1 text-sm text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0" href="{% url 'login' %}">Login</a>
-        <a class="my-1 text-sm text-gray-700 font-medium hover:text-indigo-500 md:mx-4 md:my-0" href="{% url 'register' %}">SignUp</a>
+        <a class="my-1 text-sm text-gray-700 font-medium hover:text-[#5F16B9] md:mx-4 md:my-0" href="{% url 'login' %}">Login</a>
+        <a class="my-1 text-sm text-gray-700 font-medium hover:text-[#5F16B9] md:mx-4 md:my-0" href="{% url 'register' %}">SignUp</a>
         {% endif %}
       </div>
 
       <div class="flex justify-center gap-3 items-center">
+        {% if request.user.role != 'admin' %}
         <a class="relative text-gray-700 hover:text-gray-600" href="{% url 'cart_items' %}">
           <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -45,8 +48,9 @@
           </svg>
           <span class="absolute top-0 -left-1 rounded-full bg-[#5F16B9] text-center h-3 w-3 text-white text-[10px]">{{cart_qty}}</span>
         </a>
+        {% endif %}
         {% if request.user.is_authenticated %}
-        <a href="{% url 'logout' %}">
+        <a href="{% url 'logout' %}" title="logout">
           <i class="fa-solid fa-arrow-right-from-bracket text-lg"></i>
         </a>
         {% endif %}

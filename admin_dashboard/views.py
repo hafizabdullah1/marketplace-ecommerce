@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from user_accounts.models import *
 from marketplace.decorators import role_required
 from django.http import JsonResponse
@@ -15,8 +15,10 @@ def dashboard(request):
     path = request.path
     pending_req = len(Store.objects.filter(status = False))
     total_sellers = len(CustomUser.objects.filter(role = 'seller'))
+    total_orders = len(Order.objects.all())
+    pending_orders = len(Order.objects.filter(status=False))
     
-    context = {'path': path, 'total_sellers': total_sellers, 'pending_req': pending_req}
+    context = {'path': path, 'total_sellers': total_sellers, 'pending_req': pending_req, 'total_orders': total_orders, 'pending_orders': pending_orders}
     return render(request, "admin_dashboard/dashboard.html", context)
 
 
@@ -105,4 +107,40 @@ def view_store(request, store_id):
     path = request.path
     context = {'path': path, 'store': store, 'total_products': total_products}
     return render(request, "admin_dashboard/view_store.html", context)
+
+# All orders
+@role_required('admin')
+def all_orders(request):
+    orders = Order.objects.all()
+    context = {'orders': orders }
+    return render(request, "admin_dashboard/all_orders.html", context)
     
+    
+# Delete orders
+def delete_order(request):
+    if request.user.is_authenticated and request.user.role == 'buyer':
+        return render(request, "user_dashboard")
+    
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        order = get_object_or_404(Order, id=order_id)
+        order.delete()
+        messages.success(request, 'Order successfully deleted.')
+        return JsonResponse({'success': True, 'message': 'Order successfully deleted.'})
+    return JsonResponse({'success': False, 'message': 'Invalid request.'})
+
+    
+# Mark delivered to order
+def mark_as_delivered(request):
+    if request.user.is_authenticated and request.user.role == 'buyer':
+        return render(request, "user_dashboard")
+ 
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        order = get_object_or_404(Order, id=order_id)
+        order.status = True
+        order.is_paid = True
+        order.save()
+        messages.success(request, 'Order marked as delivered and payment status updated.')
+        return JsonResponse({'success': True, 'message': 'Order marked as delivered and payment status updated.'})
+    return JsonResponse({'success': False, 'message': 'Invalid request.'})
