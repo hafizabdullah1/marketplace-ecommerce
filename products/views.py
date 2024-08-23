@@ -359,8 +359,8 @@ def payment(request, order_id):
                 source=token,
             )
 
-            order.is_paid = True
-            order.save()
+            # order.is_paid = True
+            # order.save()
 
             order_items = OrderItem.objects.filter(order=order)
 
@@ -386,12 +386,13 @@ def payment(request, order_id):
 # web hook for stripe events
 @csrf_exempt
 def stripe_webhook(request):
-    if request.user.is_authenticated and request.user.role == 'admin':
-        return redirect('admin_dashboard')
-    
+    print("Webhook called")
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    # print(f"Payload: {payload}")
+    print(f"Signature Header: {sig_header}")
 
     event = None
 
@@ -399,26 +400,27 @@ def stripe_webhook(request):
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
         )
+        print(f"Constructed Event: {event}")
     except ValueError as e:
-        # Invalid payload
+        print(f"Invalid Payload: {e}")
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
-        # Invalid signature
+        print(f"Signature Verification Error: {e}")
         return HttpResponse(status=400)
 
     # Handle the event
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
-        # PaymentIntent was successful
-        # You can update your order status here
+        print(f"Payment for {payment_intent['amount']} succeeded.")
         order_id = payment_intent.get('metadata', {}).get('order_id')
         if order_id:
             try:
                 order = Order.objects.get(id=order_id)
-                # order.status = True
                 order.is_paid = True
                 order.save()
+                print(f"Order {order_id} marked as paid.")
             except Order.DoesNotExist:
+                print(f"Order {order_id} does not exist.")
                 pass
 
     return HttpResponse(status=200)
