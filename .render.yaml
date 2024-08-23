@@ -1,9 +1,9 @@
 services:
   - type: web
-    name: your-service-name
+    name: marketplace
     env: python
     buildCommand: "./manage.py collectstatic --noinput && ./manage.py migrate"
-    startCommand: "gunicorn your_project_name.wsgi"
+    startCommand: "gunicorn marketplace.wsgi"
     envVars:
       - key: DEBUG
         value: 'False'
