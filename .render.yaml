@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: your-service-name
+    env: python
+    buildCommand: "./manage.py collectstatic --noinput && ./manage.py migrate"
+    startCommand: "gunicorn your_project_name.wsgi"
+    envVars:
+      - key: DEBUG
+        value: 'False'
+    staticPublishPath: staticfiles
+    mediaPublishPath: media
