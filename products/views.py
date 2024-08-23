@@ -73,7 +73,7 @@ def create_product(request):
 
     if request.method == 'POST':
         author = request.user
-        category_id = request.POST.get("category")
+        # category_id = request.POST.get("category")
         title = request.POST.get("title")
         description = request.POST.get("description")
         image = request.FILES.get("image")
@@ -82,16 +82,16 @@ def create_product(request):
         price = request.POST.get("price")
         countInStock = request.POST.get("countInStock")
         
-        category = None
+        # category = None
         
-        try:
-            category = Categorie.objects.get(id=category_id)
-        except Categorie.DoesNotExist:
-            messages.error(request, "Category not found")
+        # try:
+        #     category = Categorie.objects.get(id=category_id)
+        # except Categorie.DoesNotExist:
+        #     messages.error(request, "Category not found")
         
         Product.objects.create(
             author          = author,
-            category        = category,
+            # category        = category,
             title           = title,
             description     = description,
             image           = image,
@@ -104,9 +104,9 @@ def create_product(request):
         messages.success(request, 'Product created successfully.')
         return redirect('products_by_user', user_id=request.user.id)
 
-    categories = Categorie.objects.filter(author = request.user)
-    context = {'categories': categories}
-    return render(request, "products/create_product.html", context)
+    # categories = Categorie.objects.filter(author = request.user)
+    # context = {'categories': categories}
+    return render(request, "products/create_product.html")
 
 
 
@@ -169,8 +169,9 @@ def update_product(request, product_id):
             messages.success(request, 'Product updated successfully.')
             return redirect('products_by_user', user_id=request.user.id)
     
-    categories = Categorie.objects.filter(author = product.author)
-    context = {'categories': categories, 'product': product }
+    # categories = Categorie.objects.filter(author = product.author)
+    # context = {'categories': categories, 'product': product }
+    context = {'product': product }
     return render(request, 'products/update_product.html', context)
 
 
@@ -359,8 +360,8 @@ def payment(request, order_id):
                 source=token,
             )
 
-            # order.is_paid = True
-            # order.save()
+            order.is_paid = True
+            order.save()
 
             order_items = OrderItem.objects.filter(order=order)
 
@@ -439,8 +440,16 @@ def order_history(request):
 # seller orders
 @role_required('seller')
 def seller_orders(request):
-    # Filter orders where the product's author is the logged-in user
-    orders = Order.objects.filter(orderitem__product__author=request.user).distinct()
+    
+    # orders = Order.objects.filter(orderitem__product__author=request.user).distinct()
+    # Find orders containing products authored by the current seller
+    order_ids = OrderItem.objects.filter(
+            product__author=request.user
+        ).values_list('order_id', flat=True).distinct()
+        
+        # Filter orders by these IDs
+    orders = Order.objects.filter(id__in=order_ids)
+
     context = {'orders': orders}
     return render(request, "products/seller_orders.html", context)
 

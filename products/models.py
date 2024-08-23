@@ -3,21 +3,21 @@ from user_accounts.models import *
 
 # Create your models here.
 # Product category model
-class Categorie(models.Model):
-    name                    = models.CharField(max_length=50)
-    image                   = models.ImageField(upload_to='category/')
-    author                  = models.ForeignKey(CustomUser, null=True, on_delete=models.SET_NULL)
-    color                   = models.CharField(max_length=50, default='white')
-    created_at              = models.DateTimeField(auto_now_add=True)
+# class Categorie(models.Model):
+#     name                    = models.CharField(max_length=50)
+#     image                   = models.ImageField(upload_to='category/')
+#     author                  = models.ForeignKey(CustomUser, null=True, on_delete=models.SET_NULL)
+#     color                   = models.CharField(max_length=50, default='white')
+#     created_at              = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 # product model
 class Product(models.Model):
+    # category                = models.ForeignKey(Categorie, on_delete=models.CASCADE)
     author                  = models.ForeignKey(CustomUser, null=True, on_delete=models.CASCADE)
-    category                = models.ForeignKey(Categorie, on_delete=models.CASCADE)
     title                   = models.CharField(max_length=100)
     description             = models.TextField()
     image                   = models.ImageField(upload_to='products/')

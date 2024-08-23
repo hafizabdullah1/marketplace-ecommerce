@@ -9,6 +9,12 @@
 {% include 'small_header.html' %}
 
 <section class="flex gap-8 mx-10 mt-16">
+
+    {% if store and store.is_active == False %}
+    <p class="text-xl text-center text-gray-700 mt-6">
+        The store is currently inactive.
+    </p>
+    {% else %}
     <div class="bg-[#EFF2F7] p-6 rounded-lg shadow-lg w-64">
         <ul class="space-y-4">
             <li>
@@ -92,6 +98,10 @@
             {% endif %}
         </ul>
     </div>
+   
+    
+    {% endif %}
+
 
     <div class="flex-1 p-6 bg-white rounded-lg shadow-lg">
         {% block maincontent %}
