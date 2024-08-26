@@ -5,28 +5,26 @@ Update Product
 
 {% block content %}
 <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-  {% if messages %}
-  <div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
-    {% for message in messages %}
-    <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
-                    {% if message.tags == 'debug' %}
-                        bg-gray-600
-                    {% elif message.tags == 'info' %}
-                        bg-blue-500
-                    {% elif message.tags == 'success' %}
-                        bg-green-500
-                    {% elif message.tags == 'warning' %}
-                        bg-yellow-500
-                    {% elif message.tags == 'error' %}
-                        bg-red-500
-                    {% else %}
-                        bg-gray-500
-                    {% endif %}">
-      {{ message }}
-    </div>
-    {% endfor %}
+{% if messages %}
+<div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
+  {% for message in messages %}
+  {% if message.tags != 'error' %}
+  <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
+                  {% if message.tags == 'debug' %}
+                      bg-gray-600
+                  {% elif message.tags == 'info' %}
+                      bg-blue-500
+                  {% elif message.tags == 'success' %}
+                      bg-green-500
+                  {% elif message.tags == 'warning' %}
+                      bg-yellow-500
+                  {% else %}
+                      bg-gray-500
+                  {% endif %}">
+    {{ message }}
   </div>
   {% endif %}
+  {% endfor %}
   <div class="relative py-3 sm:max-w-xl sm:mx-auto">
     <div
       class="absolute inset-0 bg-gradient-to-r from-[#7520DD] to-[#51109F] shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
@@ -40,9 +38,9 @@ Update Product
             Update Product</h1>
         </div>
         <form method="post" enctype="multipart/form-data" class="divide-y divide-gray-200">
-            {% csrf_token %}
-            <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-              <!-- <div class="relative">
+          {% csrf_token %}
+          <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
+            <!-- <div class="relative">
                 <label for="category" class="block text-sm text-gray-600">Category</label>
                 <select name="category" id="category" required class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600">
                   <option value="" class="text-sm">Select Category</option>
@@ -51,50 +49,71 @@ Update Product
                   {% endfor %}
                 </select>
               </div> -->
-              <div class="relative">
-                <label for="title" class="block text-sm text-gray-600">Title</label>
-                <input id="title" name="title" type="text" required class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" value="{{ product.title }}" />
-              </div>
-              <div class="relative">
-                <label for="description" class="block text-sm text-gray-600">Description</label>
-                <textarea id="description" name="description" required class="text-sm peer placeholder-transparent h-14 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600">{{ product.description }}</textarea>
-              </div>
-              <div class="relative">
-                <label for="image" class="block text-sm text-gray-600">Image</label>
-                <input id="image" name="image" type="file" class="text-sm peer placeholder-transparent h-10 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" />
-                {% if product.image %}
-                  <img src="{{ product.image.url }}" alt="Product Image" class="mt-2 w-20 h-20 object-cover">
-                {% endif %}
-              </div>
-              <div class="relative">
-                <label for="brand" class="block text-sm text-gray-600">Brand</label>
-                <input id="brand" name="brand" type="text" required class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" value="{{ product.brand }}" />
-              </div>
-              <div class="relative">
-                <label for="color" class="block text-sm text-gray-600">Color</label>
-                <input id="color" name="color" type="text" required class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" value="{{ product.color }}" />
-              </div>
-              <div class="relative">
-                <label for="price" class="block text-sm text-gray-600">Price</label>
-                <input id="price" name="price" type="number" step="0.01" required class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" value="{{ product.price }}" />
-              </div>
-              <div class="relative">
-                <label for="countInStock" class="block text-sm text-gray-600">Count In Stock</label>
-                <input id="countInStock" name="countInStock" type="number" required class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" value="{{ product.countInStock }}" />
-              </div>
-              <div class="relative">
-                <label for="is_active" class="inline-flex items-center">
-                  <input id="is_active" name="is_active" type="checkbox" class="form-checkbox" {% if product.is_active %}checked{% endif %} />
-                  <span class="ml-2 text-sm text-gray-600">Active</span>
-                </label>
-              </div>
-              <div class="relative">
-                <button type="submit" class="bg-[#7520DD] text-white text-sm hover:opacity-90 rounded-md px-3.5 py-2 w-full">Update</button>
-              </div>
-              <p class="text-sm text-center">Don't want to update? <a class="font-bold" href="{% url 'products_by_user' user_id=request.user.id %}">Go back</a></p>
+            <div class="relative">
+              <label for="title" class="block text-sm text-gray-600">Title</label>
+              <input id="title" name="title" type="text" required
+                class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600"
+                value="{{ product.title }}" />
             </div>
-          </form>
-          
+            <div class="relative">
+              <label for="description" class="block text-sm text-gray-600">Description</label>
+              <textarea id="description" name="description" required
+                class="text-sm peer placeholder-transparent h-14 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600">{{ product.description }}</textarea>
+            </div>
+            <div class="relative">
+              <label for="image" class="block text-sm text-gray-600">Image</label>
+              <input id="image" name="image" type="file"
+                class="text-sm peer placeholder-transparent h-10 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" />
+              {% if product.image %}
+              <img src="{{ product.image.url }}" alt="Product Image" class="mt-2 w-20 h-20 object-cover">
+              {% endif %}
+            </div>
+            <div class="relative">
+              <label for="brand" class="block text-sm text-gray-600">Brand</label>
+              <input id="brand" name="brand" type="text" required
+                class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600"
+                value="{{ product.brand }}" />
+            </div>
+            <div class="relative">
+              <label for="color" class="block text-sm text-gray-600">Color</label>
+              <input id="color" name="color" type="text" required
+                class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600"
+                value="{{ product.color }}" />
+            </div>
+            <div class="relative">
+              <label for="price" class="block text-sm text-gray-600">Price</label>
+              <input id="price" name="price" type="number" step="0.01" required
+                class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600"
+                value="{{ product.price }}" />
+            </div>
+            <div class="relative">
+              <label for="countInStock" class="block text-sm text-gray-600">Count In Stock</label>
+              <input id="countInStock" name="countInStock" type="number" required
+                class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600"
+                value="{{ product.countInStock }}" />
+            </div>
+            <div class="relative">
+              <label for="is_active" class="inline-flex items-center">
+                <input id="is_active" name="is_active" type="checkbox" class="form-checkbox" {% if product.is_active
+                  %}checked{% endif %} />
+                <span class="ml-2 text-sm text-gray-600">Active</span>
+              </label>
+              {% if messages %}
+              {% for message in messages %}
+              {% if message.tags == 'error' %}
+              <span class="absolute -bottom-5 left-0 text-red-500 italic text-sm">{{message}}</span>
+              {% endif %}
+              {% endfor %}
+              {% endif %}
+            </div>
+            <div class="relative">
+              <button type="submit"
+                class="bg-[#7520DD] text-white text-sm hover:opacity-90 rounded-md px-3.5 py-2 w-full">Update</button>
+            </div>
+            <p class="text-sm text-center">Don't want to update? <a class="font-bold"
+                href="{% url 'products_by_user' user_id=request.user.id %}">Go back</a></p>
+          </div>
+        </form>
       </div>
     </div>
   </div>

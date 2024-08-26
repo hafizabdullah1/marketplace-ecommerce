@@ -283,6 +283,9 @@ def delete_cart_item(request):
 
 # checkout
 def create_order(request):
+    if not request.user.is_authenticated:
+        messages.info(request, "Please login to checkout.")
+        return redirect("login")
     if request.user.is_authenticated and request.user.role == 'admin':
         return redirect('admin_dashboard')
     
