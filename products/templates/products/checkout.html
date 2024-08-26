@@ -5,11 +5,11 @@ Checkout Page
 
 {% block content %}
 <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-{% if messages %}
-<div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
-  {% for message in messages %}
-  {% if message.tags != 'error' %}
-  <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
+  {% if messages %}
+  <div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
+    {% for message in messages %}
+    {% if message.tags != 'error' %}
+    <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
                   {% if message.tags == 'debug' %}
                       bg-gray-600
                   {% elif message.tags == 'info' %}
@@ -21,10 +21,13 @@ Checkout Page
                   {% else %}
                       bg-gray-500
                   {% endif %}">
-    {{ message }}
+      {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
   </div>
   {% endif %}
-  {% endfor %}
+
   <div class="relative py-3 sm:max-w-xl sm:mx-auto">
     <div
       class="absolute inset-0 bg-gradient-to-r from-[#7520DD] to-[#51109F] shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">

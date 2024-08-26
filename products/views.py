@@ -286,27 +286,31 @@ def create_order(request):
     if not request.user.is_authenticated:
         messages.info(request, "Please login to checkout.")
         return redirect("login")
+    
     if request.user.is_authenticated and request.user.role == 'admin':
         return redirect('admin_dashboard')
     
     if request.method == 'POST':
         address = request.POST.get('address')
         city = request.POST.get('city')
-
         cart = request.session.get('cart', {})
-        
+
         if not address or not city or not cart:
             messages.error(request, "Please fill out all required fields.")
             return redirect('checkout')  
 
         total_amount = 0
 
-        order = Order.objects.create(
-            user=request.user,
-            address=address,
-            city=city,
-            ordered_at=timezone.now()
-        )
+        try:
+            order = Order.objects.create(
+                user=request.user,
+                address=address,
+                city=city,
+                ordered_at=timezone.now()
+            )
+        except Exception as e:
+            messages.error(request, f"Failed to create order: {e}")
+            return redirect('checkout')
 
         for product_id, quantity in cart.items():
             try:
@@ -323,6 +327,9 @@ def create_order(request):
                 )
             except Product.DoesNotExist:
                 messages.error(request, f"Product with ID {product_id} does not exist.")
+                return redirect('checkout')
+            except Exception as e:
+                messages.error(request, f"Failed to create order item: {e}")
                 return redirect('checkout')
 
         order.total_amount = total_amount
