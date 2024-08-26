@@ -6,7 +6,7 @@ Create Store Page
 {% block content %}
 <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
   {% if messages %}
-  <divid="message-container" class="fixed top-5 right-5 z-50 space-y-2">
+  <div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
     {% for message in messages %}
     <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
                     {% if message.tags == 'debug' %}
@@ -60,7 +60,6 @@ Create Store Page
           <div class="relative"><button type="submit"
               class="bg-[#7520DD] text-white text-sm hover:opacity-90 rounded-md px-3.5 py-2 w-full">Create
               Store</button></div>
-          <p class="text-sm text-center">Want to go back? <a class="font-bold" href="{% url 'home' %}">Home</a></p>
         </div>
       </form>
     </div>

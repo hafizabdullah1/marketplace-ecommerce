@@ -5,11 +5,11 @@ Update Product
 
 {% block content %}
 <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-{% if messages %}
-<div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
-  {% for message in messages %}
-  {% if message.tags != 'error' %}
-  <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
+  {% if messages %}
+  <div id="message-container" class="fixed top-5 right-5 z-50 space-y-2">
+    {% for message in messages %}
+    {% if message.tags != 'error' %}
+    <div class="px-4 py-2 rounded shadow-lg text-white font-semibold
                   {% if message.tags == 'debug' %}
                       bg-gray-600
                   {% elif message.tags == 'info' %}
@@ -21,10 +21,12 @@ Update Product
                   {% else %}
                       bg-gray-500
                   {% endif %}">
-    {{ message }}
+      {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
   </div>
   {% endif %}
-  {% endfor %}
   <div class="relative py-3 sm:max-w-xl sm:mx-auto">
     <div
       class="absolute inset-0 bg-gradient-to-r from-[#7520DD] to-[#51109F] shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl">
@@ -65,7 +67,7 @@ Update Product
               <input id="image" name="image" type="file"
                 class="text-sm peer placeholder-transparent h-10 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600" />
               {% if product.image %}
-              <img src="{{ product.image.url }}" alt="Product Image" class="mt-2 w-20 h-20 object-cover">
+              <img src="{{ product.image.url }}" alt="{{product.title}}" class="mt-2 w-20 h-20 object-cover">
               {% endif %}
             </div>
             <div class="relative">
@@ -92,10 +94,11 @@ Update Product
                 class="text-sm peer placeholder-transparent h-5 w-72 border-b border-gray-300 text-gray-900 focus:outline-none focus:border-rose-600"
                 value="{{ product.countInStock }}" />
             </div>
+            {% if request.user.role == 'admin' %}
             <div class="relative">
               <label for="is_active" class="inline-flex items-center">
-                <input id="is_active" name="is_active" type="checkbox" class="form-checkbox" {% if product.is_active
-                  %}checked{% endif %} />
+                <input id="is_active" name="is_active" type="checkbox" class="form-checkbox" 
+                {% if product.is_active %}checked{% endif %} />
                 <span class="ml-2 text-sm text-gray-600">Active</span>
               </label>
               {% if messages %}
@@ -106,6 +109,7 @@ Update Product
               {% endfor %}
               {% endif %}
             </div>
+            {% endif %}
             <div class="relative">
               <button type="submit"
                 class="bg-[#7520DD] text-white text-sm hover:opacity-90 rounded-md px-3.5 py-2 w-full">Update</button>

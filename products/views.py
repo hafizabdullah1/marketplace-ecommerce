@@ -139,7 +139,7 @@ def update_product(request, product_id):
     
     if request.method == 'POST':
         # Update product details
-        category_id = request.POST.get('category')
+        # category_id = request.POST.get('category')
         title = request.POST.get('title')
         description = request.POST.get('description')
         brand = request.POST.get('brand')
@@ -154,14 +154,17 @@ def update_product(request, product_id):
             messages.error(request, 'All fields except image are required.')
         else:
             # Update the product instance
-            product.category_id = category_id
+            # product.category_id = category_id
             product.title = title
             product.description = description
             product.brand = brand
             product.color = color
             product.price = price
             product.countInStock = count_in_stock
-            product.is_active = is_active
+
+            if is_active:
+                product.is_active = is_active
+
             if image:
                 product.image = image
             product.save()

@@ -14,6 +14,10 @@
     <p class="text-xl text-center text-gray-700 mt-6">
         The store is currently inactive.
     </p>
+    {% elif store and store.status == False %}
+    <p class="text-xl text-center text-gray-700 mt-6">
+        Your request is being processed.
+    </p>
     {% else %}
     <div class="bg-[#EFF2F7] p-6 rounded-lg shadow-lg w-64">
         <ul class="space-y-4">
@@ -98,8 +102,6 @@
             {% endif %}
         </ul>
     </div>
-   
-    
     {% endif %}
 
 

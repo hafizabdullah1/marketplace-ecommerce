@@ -133,6 +133,7 @@ def logout_user(request):
 # Delete user
 @role_required('admin')
 def delete_user(request, user_id):
+    print("user_id:", user_id)
     if request.method == 'DELETE':
         try:
             user = CustomUser.objects.get(pk=user_id)
