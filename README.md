@@ -61,7 +61,7 @@ pip install -r requirements.txt
 
 ### Environment
 
-Create `marketplace/.env` from `marketplace/.env.example` (do **not** commit real secrets):
+Create `marketplace/.env` (do **not** commit real secrets):
 
 ```bash
 DEBUG=True
