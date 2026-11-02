@@ -6,12 +6,6 @@ Multi-role Django marketplace — buyers, sellers, and admins with cart, orders,
 
 [https://ecommerce-marketplace-r88g.onrender.com](https://ecommerce-marketplace-r88g.onrender.com)
 
-## Screenshots
-
-| Storefront | Cart / checkout | Admin / seller |
-| --- | --- | --- |
-| ![Store](docs/screenshots/store.png) | ![Checkout](docs/screenshots/checkout.png) | ![Admin](docs/screenshots/admin.png) |
-
 ## Key features
 
 - Role-based accounts: admin, seller (buyer role in code for store owners), and shoppers
